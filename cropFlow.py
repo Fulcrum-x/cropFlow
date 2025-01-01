@@ -25,9 +25,9 @@ class ImageConverterApp:
         # Tone mapping options
         self.tone_mapping_methods = {
             "None": None,
-            "Drago": cv2.TONEMAP_DRAGO,
-            "Reinhard": cv2.TONEMAP_REINHARD,
-            "Mantiuk": cv2.TONEMAP_MANTIUK
+            "Drago": 1,    # cv2.TONEMAP_DRAGO
+            "Reinhard": 2, # cv2.TONEMAP_REINHARD
+            "Mantiuk": 3   # cv2.TONEMAP_MANTIUK
         }
         
         self.setup_ui()
@@ -121,12 +121,16 @@ class ImageConverterApp:
         if tone_map_method is None:
             return (img_array * 255).astype(np.uint8)
             
-        if tone_map_method == cv2.TONEMAP_DRAGO:
-            tonemapper = cv2.createTonemapDrago(gamma=self.gamma_var.get())
-        elif tone_map_method == cv2.TONEMAP_REINHARD:
+        try:
+            if tone_map_method == 1:  # Drago
+                tonemapper = cv2.createTonemapDrago(gamma=self.gamma_var.get())
+            elif tone_map_method == 2:  # Reinhard
+                tonemapper = cv2.createTonemapReinhard(gamma=self.gamma_var.get())
+            elif tone_map_method == 3:  # Mantiuk
+                tonemapper = cv2.createTonemapMantiuk(gamma=self.gamma_var.get())
+        except AttributeError:
+            # Fallback to Reinhard if specific method not available
             tonemapper = cv2.createTonemapReinhard(gamma=self.gamma_var.get())
-        elif tone_map_method == cv2.TONEMAP_MANTIUK:
-            tonemapper = cv2.createTonemapMantiuk(gamma=self.gamma_var.get())
         
         # Apply tone mapping
         tone_mapped = tonemapper.process(img_float32)
