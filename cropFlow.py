@@ -9,7 +9,7 @@ from pathlib import Path
 class ImageConverterApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("ChromaShift Pro - HDR Image Converter")
+        self.root.title("cropFlow")
         self.root.geometry("600x500")
         
         # Aspect ratio options
@@ -55,12 +55,14 @@ class ImageConverterApp:
         self.tone_mapping_var = tk.StringVar(value="Reinhard")
         tone_mapping_combo = ttk.Combobox(main_frame, textvariable=self.tone_mapping_var, values=list(self.tone_mapping_methods.keys()))
         tone_mapping_combo.grid(row=5, column=0, sticky=(tk.W, tk.E), padx=5)
+        tone_mapping_combo.bind('<<ComboboxSelected>>', self.on_tone_mapping_change)
         
         # Tone mapping parameters
-        ttk.Label(main_frame, text="Tone Mapping Intensity:").grid(row=6, column=0, sticky=tk.W, pady=(15,5))
-        self.gamma_var = tk.DoubleVar(value=1.0)
-        gamma_spin = ttk.Spinbox(main_frame, from_=0.1, to=3.0, increment=0.1, textvariable=self.gamma_var, width=10)
-        gamma_spin.grid(row=7, column=0, sticky=tk.W, padx=5)
+        self.intensity_label = ttk.Label(main_frame, text="Tone Mapping Intensity:")
+        self.intensity_label.grid(row=6, column=0, sticky=tk.W, pady=(15,5))
+        self.gamma_var = tk.DoubleVar(value=0.5)  # Lower default value
+        self.gamma_spin = ttk.Spinbox(main_frame, from_=0.1, to=3.0, increment=0.1, textvariable=self.gamma_var, width=10)
+        self.gamma_spin.grid(row=7, column=0, sticky=tk.W, padx=5)
         
         # Quality selection
         ttk.Label(main_frame, text="JPEG Quality (1-100):").grid(row=8, column=0, sticky=tk.W, pady=(15,5))
@@ -112,6 +114,15 @@ class ImageConverterApp:
         
         return img
 
+    def on_tone_mapping_change(self, event=None):
+        # Enable/disable intensity control based on tone mapping selection
+        if self.tone_mapping_var.get() == "None":
+            self.gamma_spin.configure(state="disabled")
+            self.intensity_label.configure(state="disabled")
+        else:
+            self.gamma_spin.configure(state="normal")
+            self.intensity_label.configure(state="normal")
+
     def apply_tone_mapping(self, img_array):
         # Convert to float32 and normalize
         img_float32 = img_array.astype(np.float32) / 255.0
@@ -119,24 +130,39 @@ class ImageConverterApp:
         # Create tone mapping operator
         tone_map_method = self.tone_mapping_methods[self.tone_mapping_var.get()]
         if tone_map_method is None:
-            return (img_array * 255).astype(np.uint8)
+            return img_array
             
         try:
             if tone_map_method == 1:  # Drago
-                tonemapper = cv2.createTonemapDrago(gamma=self.gamma_var.get())
+                tonemapper = cv2.createTonemapDrago(gamma=self.gamma_var.get(), saturation=1.0)
             elif tone_map_method == 2:  # Reinhard
-                tonemapper = cv2.createTonemapReinhard(gamma=self.gamma_var.get())
+                # Adjusted parameters for Reinhard
+                intensity = self.gamma_var.get()
+                tonemapper = cv2.createTonemapReinhard(
+                    gamma=intensity,
+                    intensity=intensity * 0.5,  # Reduced intensity to prevent blow-out
+                    light_adapt=0.8,
+                    color_adapt=0.5
+                )
             elif tone_map_method == 3:  # Mantiuk
-                tonemapper = cv2.createTonemapMantiuk(gamma=self.gamma_var.get())
+                tonemapper = cv2.createTonemapMantiuk(gamma=self.gamma_var.get(), saturation=1.0, scale=0.7)
         except AttributeError:
             # Fallback to Reinhard if specific method not available
-            tonemapper = cv2.createTonemapReinhard(gamma=self.gamma_var.get())
+            intensity = self.gamma_var.get()
+            tonemapper = cv2.createTonemapReinhard(
+                gamma=intensity,
+                intensity=intensity * 0.5,
+                light_adapt=0.8,
+                color_adapt=0.5
+            )
         
         # Apply tone mapping
         tone_mapped = tonemapper.process(img_float32)
         
-        # Convert back to uint8
-        return np.clip(tone_mapped * 255, 0, 255).astype(np.uint8)
+        # Improve color preservation
+        tone_mapped = np.clip(tone_mapped * 255, 0, 255).astype(np.uint8)
+        
+        return tone_mapped
 
     def crop_to_aspect_ratio(self, img, target_ratio):
         if target_ratio is None:
