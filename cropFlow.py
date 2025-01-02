@@ -86,7 +86,7 @@ class ImageConverterApp:
         
         self.intensity_label = ttk.Label(hdr_frame, text="Tone Mapping Intensity:", style="Info.TLabel")
         self.intensity_label.grid(row=2, column=0, sticky=tk.W, pady=(10, 5))
-        self.gamma_var = tk.DoubleVar(value=0.5)
+        self.gamma_var = tk.DoubleVar(value=0.3)
         self.gamma_spin = ttk.Spinbox(hdr_frame, from_=0.1, to=3.0, increment=0.1, textvariable=self.gamma_var, width=10)
         self.gamma_spin.grid(row=3, column=0, sticky=tk.W, padx=5)
         
