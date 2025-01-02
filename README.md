@@ -2,8 +2,6 @@
 
 CropFlow is a powerful, user-friendly desktop application for batch converting PNG images to high-quality JPG format with advanced cropping and HDR tone mapping capabilities.
 
-![CropFlow Interface](placeholder-for-screenshot.png)
-
 ## Features
 
 - **Batch PNG to JPG Conversion**: Convert multiple PNG images at once while maintaining high quality
