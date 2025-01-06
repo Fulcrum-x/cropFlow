@@ -11,7 +11,7 @@ CropFlow is a powerful, user-friendly desktop application for batch converting P
   - 2.39:1 (Anamorphic)
   - 4:3 (Standard)
   - Original aspect ratio
-  - **Automatic Letterbox Detection** (Automatically detects and removes black bars from images)
+  - Automatic Letterbox Detection (Automatically detects and removes black bars from images)
 - **HDR Tone Mapping**: Three tone mapping algorithms:
   - Reinhard (Default): Excellent for general-purpose HDR conversion
   - Drago: Enhanced detail preservation in dark areas
