@@ -5,7 +5,7 @@ CropFlow is a powerful, user-friendly desktop application for batch converting P
 ## Features
 
 - **Batch PNG to JPG Conversion**: Convert multiple PNG images at once while maintaining high quality
-- **Smart Aspect Ratio Cropping**: Multiple preset options including:
+- **Aspect Ratio Cropping**: Multiple preset options including:
   - 16:9 (Widescreen)
   - 1.85:1 (Digital Cinema)
   - 2.39:1 (Anamorphic)
@@ -16,7 +16,7 @@ CropFlow is a powerful, user-friendly desktop application for batch converting P
   - Reinhard (Default): Excellent for general-purpose HDR conversion
   - Drago: Enhanced detail preservation in dark areas
   - Mantiuk: Optimized for high-contrast scenes
-- **Customizable Settings**:
+- **Settings**:
   - Adjustable JPEG quality (1-100)
   - Tone mapping intensity control
   - Transparent PNG handling with white background conversion
