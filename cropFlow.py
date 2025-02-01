@@ -10,7 +10,7 @@ class ImageConverterApp:
     def __init__(self, root):
         self.root = root
         self.root.title("CropFlow")
-        self.root.geometry("470x700")
+        self.root.geometry("470x750")
         self.root.resizable(False, False)
         
         # Configure style
@@ -121,7 +121,7 @@ class ImageConverterApp:
         # PNG Compression settings
         self.png_compress_label = ttk.Label(quality_frame, text="PNG Compression (0-9):", style="Info.TLabel")
         self.png_compress_label.grid(row=2, column=1, sticky=tk.W, pady=(10, 5), padx=(20, 0))
-        self.png_compress_var = tk.IntVar(value=6)
+        self.png_compress_var = tk.IntVar(value=1)
         self.png_compress_spin = ttk.Spinbox(quality_frame, from_=0, to=9, textvariable=self.png_compress_var, width=10)
         self.png_compress_spin.grid(row=3, column=1, sticky=tk.W, padx=(20, 0))
         self.png_compress_spin.configure(state="disabled")
