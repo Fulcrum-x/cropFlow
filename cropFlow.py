@@ -124,6 +124,8 @@ class ImageConverterApp:
         self.png_compress_var = tk.IntVar(value=6)
         self.png_compress_spin = ttk.Spinbox(quality_frame, from_=0, to=9, textvariable=self.png_compress_var, width=10)
         self.png_compress_spin.grid(row=3, column=1, sticky=tk.W, padx=(20, 0))
+        self.png_compress_spin.configure(state="disabled")
+        self.png_compress_label.configure(state="disabled")
 
         # File suffix settings
         ttk.Label(quality_frame, text="Output Suffix:", style="Info.TLabel").grid(row=2, column=0, sticky=tk.W, pady=(10, 5))
