@@ -29,6 +29,15 @@ class ImageConverterApp:
             "Auto-detect Letterbox": "auto"
         }
         
+        # Output format options
+        self.output_formats = {
+            "JPEG": ".jpg",
+            "PNG": ".png"
+        }
+        
+        # Default suffix for output files
+        self.default_suffix = "_converted"
+        
         # Tone mapping options
         self.tone_mapping_methods = {
             "None": None,
@@ -94,10 +103,33 @@ class ImageConverterApp:
         quality_frame = ttk.LabelFrame(sections_frame, text="Output Settings", padding="10")
         quality_frame.grid(row=3, column=0, sticky=(tk.W, tk.E), pady=(0, 15))
         
-        ttk.Label(quality_frame, text="JPEG Quality (1-100):", style="Info.TLabel").grid(row=0, column=0, sticky=tk.W, pady=5)
+        # Output Format Selection
+        ttk.Label(quality_frame, text="Output Format:", style="Info.TLabel").grid(row=0, column=0, sticky=tk.W, pady=5)
+        self.format_var = tk.StringVar(value="JPEG")
+        format_combo = ttk.Combobox(quality_frame, textvariable=self.format_var, values=list(self.output_formats.keys()), width=10)
+        format_combo.grid(row=1, column=0, sticky=tk.W, padx=5)
+        format_combo.state(['readonly'])
+        format_combo.bind('<<ComboboxSelected>>', self.on_format_change)
+        
+        # Quality settings
+        self.quality_label = ttk.Label(quality_frame, text="JPEG Quality (1-100):", style="Info.TLabel")
+        self.quality_label.grid(row=0, column=1, sticky=tk.W, pady=5, padx=(20, 0))
         self.quality_var = tk.IntVar(value=95)
-        quality_spin = ttk.Spinbox(quality_frame, from_=1, to=100, textvariable=self.quality_var, width=10)
-        quality_spin.grid(row=1, column=0, sticky=tk.W, padx=5)
+        self.quality_spin = ttk.Spinbox(quality_frame, from_=1, to=100, textvariable=self.quality_var, width=10)
+        self.quality_spin.grid(row=1, column=1, sticky=tk.W, padx=(20, 0))
+
+        # PNG Compression settings
+        self.png_compress_label = ttk.Label(quality_frame, text="PNG Compression (0-9):", style="Info.TLabel")
+        self.png_compress_label.grid(row=2, column=1, sticky=tk.W, pady=(10, 5), padx=(20, 0))
+        self.png_compress_var = tk.IntVar(value=6)
+        self.png_compress_spin = ttk.Spinbox(quality_frame, from_=0, to=9, textvariable=self.png_compress_var, width=10)
+        self.png_compress_spin.grid(row=3, column=1, sticky=tk.W, padx=(20, 0))
+
+        # File suffix settings
+        ttk.Label(quality_frame, text="Output Suffix:", style="Info.TLabel").grid(row=2, column=0, sticky=tk.W, pady=(10, 5))
+        self.suffix_var = tk.StringVar(value=self.default_suffix)
+        self.suffix_entry = ttk.Entry(quality_frame, textvariable=self.suffix_var, width=15)
+        self.suffix_entry.grid(row=3, column=0, sticky=tk.W, padx=5)
         
         # Progress Section
         progress_frame = ttk.LabelFrame(sections_frame, text="Progress", padding="10")
@@ -113,6 +145,19 @@ class ImageConverterApp:
         
         # Configure style for accent button
         self.style.configure("Accent.TButton", font=("Segoe UI", 10, "bold"))
+
+    def on_format_change(self, event=None):
+        # Update quality controls based on format selection
+        if self.format_var.get() == "JPEG":
+            self.quality_spin.configure(state="normal")
+            self.quality_label.configure(state="normal")
+            self.png_compress_spin.configure(state="disabled")
+            self.png_compress_label.configure(state="disabled")
+        else:  # PNG
+            self.quality_spin.configure(state="disabled")
+            self.quality_label.configure(state="disabled")
+            self.png_compress_spin.configure(state="normal")
+            self.png_compress_label.configure(state="normal")
 
     def on_tone_mapping_change(self, event=None):
         # Enable/disable intensity control based on tone mapping selection
@@ -234,6 +279,7 @@ class ImageConverterApp:
             return
             
         aspect_ratio = self.aspect_ratios[self.aspect_ratio_var.get()]
+        output_format = self.output_formats[self.format_var.get()]
         quality = self.quality_var.get()
         
         self.convert_btn.config(state='disabled')
@@ -263,9 +309,16 @@ class ImageConverterApp:
                     # Crop to aspect ratio if selected
                     img = self.crop_to_aspect_ratio(img, aspect_ratio)
                     
-                    # Save as JPG
-                    jpg_path = png_file.with_suffix('.jpg')
-                    img.save(jpg_path, 'JPEG', quality=quality)
+                    # Create output path with suffix
+                    suffix = self.suffix_var.get()
+                    output_stem = png_file.stem + suffix
+                    output_path = png_file.with_name(output_stem).with_suffix(output_format)
+                    
+                    # Save with selected format and settings
+                    if output_format == '.jpg':
+                        img.save(output_path, 'JPEG', quality=quality)
+                    else:  # PNG format
+                        img.save(output_path, 'PNG', optimize=True, compress_level=self.png_compress_var.get())
                 
                 processed += 1
                 self.progress_var.set((processed / len(png_files)) * 100)
